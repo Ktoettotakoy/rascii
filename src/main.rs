@@ -8,10 +8,8 @@ use rascii::utils::embedded_font::get_embedded_font;
 const ASCII_CHARS: &[u8] = b"@%#*+=-:. ";
 const ASCII_CHARS_EXTENDED: &[u8] = b"@%#*+=-:.      ";
 const ASCII_CHARS_INVERTED: &[u8] = b" .:-=+*#%@";
-const ASCII_CHARS_INVERTED_EXTENDED: &[u8] = b" .:-=+*#%@.       ";
-const ASCII_CHARS_INVERTED_EXTENDED_4: &[u8] = b".:-=+*#%@.                ";
-const ASCII_CHARS_MODERATE_DETAIL: &[u8] = b"    .'`^\",:;Il!i><~+_-?][}{1)(|\\/tfjrxnuvczXYUJCLQ0OZmwqpdbkhao*#MW&8%B@$";
-const ASCII_CHARS_MODERATE_DETAIL_REVERSED: &[u8] = b"$@%B&8W#*oahkbdpqmwZO0QLCJUYXzcvunxrjft\\/|)(1}{][?-_+~><i!lI;:,\"^`\'. ";
+const ASCII_CHARS_MODERATE_DETAIL: &[u8] = b"   .'`^\",:;Il!i><~+_-?][}{1)(|\\/tfjrxnuvczXYUJCLQ0OZmwqpdbkhao*#MW&8%B@$";
+const ASCII_CHARS_MODERATE_DETAIL_INVERTED: &[u8] = b"$@%B&8W#*oahkbdpqmwZO0QLCJUYXzcvunxrjft\\/|)(1}{][?-_+~><i!lI;:,\"^`\'. ";
 
 /// ASCII Art Generator
 #[derive(Parser, Debug)]
@@ -62,7 +60,7 @@ fn main() {
                     &get_embedded_font(),
                     2560,
                     1440,
-                    11.0,
+                    9.0,
                 );
                 img.save(out).expect("Failed to save image");
             } else {
@@ -83,10 +81,8 @@ fn image_to_ascii(img: image::GrayImage, style: Option<u8>) -> String {
         match style.unwrap() {
             1 => ASCII_CHARS_EXTENDED,
             2 => ASCII_CHARS_INVERTED,
-            3 => ASCII_CHARS_INVERTED_EXTENDED,
-            4 => ASCII_CHARS_INVERTED_EXTENDED_4,
-            5 => ASCII_CHARS_MODERATE_DETAIL,
-            6 => ASCII_CHARS_MODERATE_DETAIL_REVERSED,
+            3 => ASCII_CHARS_MODERATE_DETAIL,
+            4 => ASCII_CHARS_MODERATE_DETAIL_INVERTED,
             _ => ASCII_CHARS,
         }
     } else {

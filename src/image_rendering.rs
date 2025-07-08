@@ -6,13 +6,13 @@ pub fn render_ascii_to_image(ascii: &str, font: &Font, img_width: u32, img_heigh
     let v_metrics = font.v_metrics(scale);
 
     let mut image = RgbImage::new(img_width, img_height);
-    let white = Rgb([255, 255, 255]);
-    let black = Rgb([0, 0, 0]);
+    let _white = Rgb([255, 255, 255]);
+    // let blueish = Rgb([32, 50, 60]);
+    let lighter_black = Rgb([8, 8, 8]);
+    let _black = Rgb([0, 0, 0]);
 
-    // Fill background black
-    for pixel in image.pixels_mut() {
-        *pixel = black;
-    }
+    // Fill background
+    fill_background(&mut image, lighter_black);
 
     let start_x = 10;
     let mut y = 10 + v_metrics.ascent as u32;
@@ -21,7 +21,7 @@ pub fn render_ascii_to_image(ascii: &str, font: &Font, img_width: u32, img_heigh
         let mut x = start_x;
 
         for ch in line.chars() {
-            if let Some(glyph) = font.glyph(ch).scaled(scale).positioned(rusttype::point(x as f32, y as f32)).pixel_bounding_box() {
+            if let Some(_glyph) = font.glyph(ch).scaled(scale).positioned(rusttype::point(x as f32, y as f32)).pixel_bounding_box() {
                 font.glyph(ch)
                     .scaled(scale)
                     .positioned(rusttype::point(x as f32, y as f32))
@@ -41,4 +41,10 @@ pub fn render_ascii_to_image(ascii: &str, font: &Font, img_width: u32, img_heigh
     }
 
     image
+}
+
+fn fill_background(image: &mut RgbImage, color: Rgb<u8>) {
+    for pixel in image.pixels_mut() {
+        *pixel = color;
+    }
 }
