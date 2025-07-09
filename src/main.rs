@@ -32,7 +32,7 @@ enum Commands {
         #[arg(short, long, default_value_t = 100)]
         width: u32,
 
-        /// Style of ASCII art (0 for basic, 1 for extended, 2 for inverted)
+        /// Style of ASCII art (0 for basic, 1 for extended, 2 for inverted...)
         /// Default is 0 (basic)
         #[arg(short, long)]
         style: Option<u8>,
