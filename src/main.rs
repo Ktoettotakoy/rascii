@@ -1,15 +1,11 @@
 use clap::{Parser, Subcommand};
-// use image::GenericImageView;
-use image::imageops::FilterType;
 
-use rascii::image_rendering::render_ascii_to_image;
+use rascii::utils::image_ops::image_filters::resize_image_simple;
+use rascii::utils::image_to_ascii::image_to_ascii;
+use rascii::utils::image_ops::image_rendering::render_ascii_to_image;
 use rascii::utils::embedded_font::get_embedded_font;
+use rascii::utils::video_ops::video_rendering::process_video_to_ascii;
 
-const ASCII_CHARS: &[u8] = b"@%#*+=-:. ";
-const ASCII_CHARS_EXTENDED: &[u8] = b"@%#*+=-:.      ";
-const ASCII_CHARS_INVERTED: &[u8] = b" .:-=+*#%@";
-const ASCII_CHARS_MODERATE_DETAIL: &[u8] = b"   .'`^\",:;Il!i><~+_-?][}{1)(|\\/tfjrxnuvczXYUJCLQ0OZmwqpdbkhao*#MW&8%B@$";
-const ASCII_CHARS_MODERATE_DETAIL_INVERTED: &[u8] = b"$@%B&8W#*oahkbdpqmwZO0QLCJUYXzcvunxrjft\\/|)(1}{][?-_+~><i!lI;:,\"^`\'. ";
 
 /// ASCII Art Generator
 #[derive(Parser, Debug)]
@@ -48,7 +44,7 @@ enum Commands {
         res: String,
 
         /// Width in characters (columns) for ASCII rendering
-        #[arg(short = 'c', long, default_value_t = 100)]
+        #[arg(short = 'w', long, default_value_t = 100)]
         char_width: u32,
 
         /// Font size
@@ -63,6 +59,27 @@ enum Commands {
         #[arg(short, long, default_value_t = String::from("output.png"))]
         output: String,
     },
+    Video {
+        /// Path to the input video
+        #[arg(short, long)]
+        input: String,
+
+        /// Output file path
+        #[arg(short, long, default_value_t = String::from("ascii_video.mp4"))]
+        output: String,
+
+        /// ASCII character width per frame
+        #[arg(short = 'w', long, default_value_t = 120)]
+        char_width: u32,
+
+        /// Style of ASCII art
+        #[arg(short, long)]
+        style: Option<u8>,
+
+        /// Font size
+        #[arg(short = 'f', long, default_value_t = 9.0)]
+        f_size: f32,
+    },
 }
 
 fn main() {
@@ -74,9 +91,9 @@ fn main() {
             println!("Width: {}", width);
 
             println!("Printing ASCII to stdout");
-            println!("{}",image_to_ascii(resize_image(input, *width), *style));
+            println!("{}",image_to_ascii(resize_image_simple(input, *width), *style));
         },
-         Commands::Image { input, res, char_width, f_size, style, output } => {
+        Commands::Image { input, res, char_width, f_size, style, output } => {
             let (width_px, height_px) = parse_resolution(res).unwrap_or_else(|| {
                 eprintln!("Invalid resolution: '{}'", res);
                 std::process::exit(1);
@@ -85,7 +102,7 @@ fn main() {
             println!("Rendering at resolution: {}x{} px", width_px, height_px);
             println!("Character width: {}", char_width);
 
-            let ascii = image_to_ascii(resize_image(input, *char_width), *style);
+            let ascii = image_to_ascii(resize_image_simple(input, *char_width), *style);
             let img = render_ascii_to_image(
                 &ascii,
                 &get_embedded_font(),
@@ -95,6 +112,10 @@ fn main() {
             );
             img.save(output).expect("Failed to save image");
             println!("ASCII art saved to: {}", output);
+        },
+        Commands::Video { input, output, char_width, style, f_size } => {
+            println!("Converting video: {}", input);
+            process_video_to_ascii(input, output, *char_width, *style, *f_size);
         }
     }
 }
@@ -115,42 +136,4 @@ fn parse_resolution(res_str: &str) -> Option<(u32, u32)> {
             None
         }
     }
-}
-
-// Convert an image to ASCII art
-// It returns a string into the stdout containing the ASCII art representation of the image.
-// The image is resized to the specified width while maintaining the aspect ratio.
-fn image_to_ascii(img: image::GrayImage, style: Option<u8>) -> String {
-    let mut ascii = String::new();
-
-    let ascii_set: &[u8] = match style.unwrap_or(0) {
-        1 => ASCII_CHARS_EXTENDED,
-        2 => ASCII_CHARS_INVERTED,
-        3 => ASCII_CHARS_MODERATE_DETAIL,
-        4 => ASCII_CHARS_MODERATE_DETAIL_INVERTED,
-        _ => ASCII_CHARS,
-    };
-
-    // println!("Using ASCII set: {:?}", std::str::from_utf8(ascii_set).expect("Invalid UTF-8 data").chars());
-    for y in 0..img.height() {
-        for x in 0..img.width() {
-            let pixel = img.get_pixel(x, y)[0];
-            ascii.push(pixel_to_ascii(pixel, ascii_set));
-        }
-        ascii.push('\n');
-    }
-    ascii
-}
-
-fn resize_image(path: &str, width: u32) -> image::GrayImage {
-    let img = image::open(path).expect("Failed to open image").to_luma8();
-    let (orig_width, orig_height) = img.dimensions();
-    let aspect_ratio = orig_height as f32 / orig_width as f32;
-    let height = (width as f32 * aspect_ratio * 0.55) as u32; // Adjust for terminal font ratio
-    image::imageops::resize(&img, width, height, FilterType::Nearest)
-}
-
-fn pixel_to_ascii(pixel: u8, ascii_set: &[u8]) -> char {
-    let index = (pixel as f32 / 255.0 * (ascii_set.len() - 1) as f32) as usize;
-    ascii_set[index] as char
 }
