@@ -15,6 +15,7 @@ const ASCII_CHARS_MODERATE_DETAIL_INVERTED: &[u8] = b"$@%B&8W#*oahkbdpqmwZO0QLCJ
 #[derive(Parser, Debug)]
 #[command(name = "ascii-art")]
 #[command(author = "Yaroslav", version, about = "Generate ASCII art from images")]
+#[command (disable_help_flag = true)]
 struct Cli {
     #[command(subcommand)]
     command: Commands,
@@ -23,7 +24,7 @@ struct Cli {
 #[derive(Subcommand, Debug)]
 enum Commands {
     /// Convert an image to ASCII
-    Convert {
+    Text {
         /// Path to the input image
         #[arg(short, long)]
         input: String,
@@ -36,10 +37,31 @@ enum Commands {
         /// Default is 0 (basic)
         #[arg(short, long)]
         style: Option<u8>,
-
-        /// Output file (optional)
+    },
+    Image {
+        /// Path to the input image
         #[arg(short, long)]
-        output: Option<String>,
+        input: String,
+
+        /// Output resolution: either named (2k, fhd) or custom (e.g. 1920x1080)
+        #[arg(short, long)]
+        res: String,
+
+        /// Width in characters (columns) for ASCII rendering
+        #[arg(short = 'c', long, default_value_t = 100)]
+        char_width: u32,
+
+        /// Font size
+        #[arg(short = 'f', long, default_value_t = 9.0)]
+        f_size: f32,
+
+        /// ASCII art style
+        #[arg(short, long)]
+        style: Option<u8>,
+
+        /// Output file
+        #[arg(short, long, default_value_t = String::from("output.png"))]
+        output: String,
     },
 }
 
@@ -47,26 +69,50 @@ fn main() {
  let cli = Cli::parse();
 
     match &cli.command {
-        Commands::Convert { input, width, style, output } => {
+        Commands::Text { input, width, style} => {
             println!("Input file: {}", input);
             println!("Width: {}", width);
 
+            println!("Printing ASCII to stdout");
+            println!("{}",image_to_ascii(resize_image(input, *width), *style));
+        },
+         Commands::Image { input, res, char_width, f_size, style, output } => {
+            let (width_px, height_px) = parse_resolution(res).unwrap_or_else(|| {
+                eprintln!("Invalid resolution: '{}'", res);
+                std::process::exit(1);
+            });
 
-            if let Some(out) = output {
-                println!("Saving output to: {}", out);
-                let ascii = image_to_ascii(resize_image(input, *width), *style);
-                let img = render_ascii_to_image(
-                    &ascii,
-                    &get_embedded_font(),
-                    2560,
-                    1440,
-                    9.0,
-                );
-                img.save(out).expect("Failed to save image");
-            } else {
-                println!("Printing ASCII to stdout");
-                println!("{}",image_to_ascii(resize_image(input, *width), *style));
+            println!("Rendering at resolution: {}x{} px", width_px, height_px);
+            println!("Character width: {}", char_width);
+
+            let ascii = image_to_ascii(resize_image(input, *char_width), *style);
+            let img = render_ascii_to_image(
+                &ascii,
+                &get_embedded_font(),
+                width_px,
+                height_px,
+                *f_size,
+            );
+            img.save(output).expect("Failed to save image");
+            println!("ASCII art saved to: {}", output);
+        }
+    }
+}
+
+fn parse_resolution(res_str: &str) -> Option<(u32, u32)> {
+    match res_str.to_lowercase().as_str() {
+        "2k" => Some((2560, 1440)),
+        "fhd" => Some((1920, 1080)),
+        "wxga" => Some((1440, 900)),
+        _ => {
+            // Try parsing "WIDTHxHEIGHT"
+            let parts: Vec<&str> = res_str.split('x').collect();
+            if parts.len() == 2 {
+                if let (Ok(w), Ok(h)) = (parts[0].parse::<u32>(), parts[1].parse::<u32>()) {
+                    return Some((w, h));
+                }
             }
+            None
         }
     }
 }
@@ -77,19 +123,15 @@ fn main() {
 fn image_to_ascii(img: image::GrayImage, style: Option<u8>) -> String {
     let mut ascii = String::new();
 
-    let ascii_set: &[u8] = if style.is_some() {
-        match style.unwrap() {
-            1 => ASCII_CHARS_EXTENDED,
-            2 => ASCII_CHARS_INVERTED,
-            3 => ASCII_CHARS_MODERATE_DETAIL,
-            4 => ASCII_CHARS_MODERATE_DETAIL_INVERTED,
-            _ => ASCII_CHARS,
-        }
-    } else {
-        ASCII_CHARS
+    let ascii_set: &[u8] = match style.unwrap_or(0) {
+        1 => ASCII_CHARS_EXTENDED,
+        2 => ASCII_CHARS_INVERTED,
+        3 => ASCII_CHARS_MODERATE_DETAIL,
+        4 => ASCII_CHARS_MODERATE_DETAIL_INVERTED,
+        _ => ASCII_CHARS,
     };
 
-    println!("Using ASCII set: {:?}", std::str::from_utf8(ascii_set).expect("Invalid UTF-8 data").chars());
+    // println!("Using ASCII set: {:?}", std::str::from_utf8(ascii_set).expect("Invalid UTF-8 data").chars());
     for y in 0..img.height() {
         for x in 0..img.width() {
             let pixel = img.get_pixel(x, y)[0];
