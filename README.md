@@ -1,24 +1,38 @@
-# RASCII
+# 🎨 RASCII - ASCII Art Generator CLI
 
-Generate ascii from an image or video cli tool
+![Build](https://img.shields.io/badge/build-passing-brightgreen)
+![License](https://img.shields.io/badge/license-MIT-blue)
+![Rust](https://img.shields.io/badge/Rust-2021-orange)
+![Platform](https://img.shields.io/badge/platform-cross--platform-lightgrey)
 
-Usage: rascii <COMMAND>
+**RASCII** is a blazing-fast CLI tool written in Rust that converts **images** and **videos** into expressive **ASCII art**.
 
-### Commands:
-#### convert
-Convert an image to ASCII
-Usage: rascii convert [OPTIONS] --input <INPUT>
+---
 
+## Features
+
+- 📷 Terminal-rendered ASCII from images
+- 🖼️ Save ASCII art as high-resolution PNGs
+- 🎞️ Convert video files into ASCII animations
+- 🎨 Multiple styles and font options
+- 🧠 Supports named or custom output resolutions
+
+---
+## Help and Version
+rascii --help
+rascii text --help
+rascii image --help
+rascii video --help
+rascii --version
+
+---
+## Installation
+
+For now you need [Rust and Cargo](https://www.rust-lang.org/tools/install) installed:
+
+```bash
+git clone https://github.com/your-user/rascii
+cd rascii
+cargo build --release
 ```
-Options:
-  -i, --input <INPUT>    Path to the input image
-  -w, --width <WIDTH>    Output width [default: 100]
-  -s, --style <STYLE>    Style of ASCII art (0 for basic, 1 for extended, 2 for inverted) Default is 0 (basic)
-  -o, --output <OUTPUT>  Output file (optional)
-```
-#### help
-Print this message or the help of the given subcommand(s)
-
-Options:
-  -h, --help     Print help
-  -V, --version  Print version
+The binary will be located at: `target/release/rascii`
