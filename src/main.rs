@@ -64,6 +64,10 @@ enum Commands {
         #[arg(short, long)]
         input: String,
 
+        /// Output resolution: either named (2k, fhd) or custom (e.g. 1920x1080)
+        #[arg(short, long)]
+        res: String,
+
         /// Output file path
         #[arg(short, long, default_value_t = String::from("ascii_video.mp4"))]
         output: String,
@@ -113,9 +117,13 @@ fn main() {
             img.save(output).expect("Failed to save image");
             println!("ASCII art saved to: {}", output);
         },
-        Commands::Video { input, output, char_width, style, f_size } => {
+        Commands::Video { input, res, output, char_width, style, f_size } => {
+            let (width_px, height_px) = parse_resolution(res).unwrap_or_else(|| {
+                eprintln!("Invalid resolution: '{}'", res);
+                std::process::exit(1);
+            });
             println!("Converting video: {}", input);
-            process_video_to_ascii(input, output, *char_width, *style, *f_size);
+            process_video_to_ascii(input, output, width_px, height_px, *char_width, *style, *f_size);
         }
     }
 }

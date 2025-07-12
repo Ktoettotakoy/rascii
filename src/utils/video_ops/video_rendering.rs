@@ -9,6 +9,8 @@ use crate::utils::embedded_font::get_embedded_font;
 pub fn process_video_to_ascii(
     input: &str,
     output: &str,
+    width: u32,
+    height: u32,
     char_width: u32,
     style: Option<u8>,
     f_size: f32,
@@ -32,7 +34,7 @@ pub fn process_video_to_ascii(
 
     for (i, path) in frame_paths.iter().enumerate() {
         let ascii = image_to_ascii(resize_image_simple(path.to_str().unwrap(), char_width), style);
-        let ascii_img = render_ascii_to_image(&ascii, &get_embedded_font(), 1920, 1080, f_size);
+        let ascii_img = render_ascii_to_image(&ascii, &get_embedded_font(), width, height, f_size);
         let out_frame = format!("{}/ascii_{:04}.png", ascii_frames_dir, i);
         ascii_img.save(&out_frame).expect("Failed to save ASCII frame");
     }
