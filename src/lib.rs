@@ -1,4 +1,5 @@
 pub mod utils{
+    pub mod timer;
     pub mod embedded_font;
     pub mod image_to_ascii;
     pub mod image_ops{

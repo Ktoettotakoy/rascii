@@ -1,10 +1,12 @@
 use clap::{Parser, Subcommand};
+use log::{debug};
 
 use rascii::utils::image_ops::image_filters::resize_image_simple;
 use rascii::utils::image_to_ascii::image_to_ascii;
 use rascii::utils::image_ops::image_rendering::render_ascii_to_image;
 use rascii::utils::embedded_font::get_embedded_font;
 use rascii::utils::video_ops::video_rendering::process_video_to_ascii;
+use rascii::utils::timer::timer_debug;
 
 
 /// ASCII Art Generator
@@ -15,6 +17,10 @@ use rascii::utils::video_ops::video_rendering::process_video_to_ascii;
 struct Cli {
     #[command(subcommand)]
     command: Commands,
+
+    /// Enable debug output (timing info)
+    #[arg(long)]
+    debug: bool,
 }
 
 #[derive(Subcommand, Debug)]
@@ -87,15 +93,26 @@ enum Commands {
 }
 
 fn main() {
- let cli = Cli::parse();
+    let cli = Cli::parse();
+
+    // initialize logging
+    if cli.debug {
+        std::env::set_var("RUST_LOG", "debug");
+    }
+    env_logger::init();
 
     match &cli.command {
         Commands::Text { input, width, style} => {
-            println!("Input file: {}", input);
-            println!("Width: {}", width);
+            debug!("Input file: {}", input);
+            debug!("Width: {}", width);
 
             println!("Printing ASCII to stdout");
-            println!("{}",image_to_ascii(resize_image_simple(input, *width), *style));
+
+            let ascii = timer_debug("image_to_ascii", || {
+                image_to_ascii(resize_image_simple(input, *width), *style)
+            });
+
+            println!("{}",ascii);
         },
         Commands::Image { input, res, char_width, f_size, style, output } => {
             let (width_px, height_px) = parse_resolution(res).unwrap_or_else(|| {
@@ -103,17 +120,15 @@ fn main() {
                 std::process::exit(1);
             });
 
-            println!("Rendering at resolution: {}x{} px", width_px, height_px);
-            println!("Character width: {}", char_width);
+            debug!("Rendering at resolution: {}x{} px", width_px, height_px);
+            debug!("Character width: {}", char_width);
 
             let ascii = image_to_ascii(resize_image_simple(input, *char_width), *style);
-            let img = render_ascii_to_image(
-                &ascii,
-                &get_embedded_font(),
-                width_px,
-                height_px,
-                *f_size,
-            );
+
+            let img = timer_debug("render_ascii_to_image", || {
+                render_ascii_to_image(&ascii, &get_embedded_font(), width_px, height_px, *f_size)
+            });
+
             img.save(output).expect("Failed to save image");
             println!("ASCII art saved to: {}", output);
         },
@@ -123,7 +138,8 @@ fn main() {
                 std::process::exit(1);
             });
             println!("Converting video: {}", input);
-            process_video_to_ascii(input, output, width_px, height_px, *char_width, *style, *f_size);
+            timer_debug("Video to ascii total", || { process_video_to_ascii(input, output, width_px, height_px, *char_width, *style, *f_size)});
+            println!("ASCII video saved to: {}", output);
         }
     }
 }
