@@ -8,3 +8,5 @@ clap = { version = "4.5.40", features = ["derive"] }
 image = "0.25"
 rusttype = "0.9"
 termion = "2.0"
+log = "0.4"
+env_logger = "0.11"
