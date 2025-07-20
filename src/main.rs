@@ -1,10 +1,12 @@
 use clap::{Parser, Subcommand};
 use log::{debug};
+use colored::*;
+
 
 use rascii::utils::image_ops::image_filters::resize_image_simple;
 use rascii::utils::image_to_ascii::image_to_ascii;
 use rascii::utils::image_ops::image_rendering::render_ascii_to_image;
-use rascii::utils::embedded_font::get_embedded_font;
+use rascii::utils::font_utils::{get_embedded_font,get_larry3d_font};
 use rascii::utils::video_ops::video_rendering::process_video_to_ascii;
 use rascii::utils::timer::timer_debug;
 
@@ -25,8 +27,8 @@ struct Cli {
 
 #[derive(Subcommand, Debug)]
 enum Commands {
-    /// Convert an image to ASCII
-    Text {
+    /// Converts an image to ASCII into stdout
+    Console {
         /// Path to the input image
         #[arg(short, long)]
         input: String,
@@ -35,18 +37,18 @@ enum Commands {
         #[arg(short, long, default_value_t = 100)]
         width: u32,
 
-        /// Style of ASCII art (0 for basic, 1 for extended, 2 for inverted...)
-        /// Default is 0 (basic)
+        /// ASCII art style [default: 0]
         #[arg(short, long)]
         style: Option<u8>,
     },
+    /// Converts an image to ASCII and save as an image file
     Image {
         /// Path to the input image
         #[arg(short, long)]
         input: String,
 
-        /// Output resolution: either named (2k, fhd) or custom (e.g. 1920x1080)
-        #[arg(short, long)]
+        /// Output resolution
+        #[arg(short, long, default_value_t = String::from("fhd"))]
         res: String,
 
         /// Width in characters (columns) for ASCII rendering
@@ -57,42 +59,44 @@ enum Commands {
         #[arg(short = 'f', long, default_value_t = 9.0)]
         f_size: f32,
 
-        /// ASCII art style
+        /// ASCII art style [default: 0]
         #[arg(short, long)]
         style: Option<u8>,
 
         /// Output file
-        #[arg(short, long, default_value_t = String::from("output.png"))]
+        #[arg(short, long, default_value_t = String::from("res.png"))]
         output: String,
     },
+    /// Converts a video to ASCII and save as a video file
     Video {
         /// Path to the input video
         #[arg(short, long)]
         input: String,
 
-        /// Output resolution: either named (2k, fhd) or custom (e.g. 1920x1080)
-        #[arg(short, long)]
+        /// Output resolution
+        #[arg(short, long, default_value_t = String::from("fhd"))]
         res: String,
-
-        /// Output file path
-        #[arg(short, long, default_value_t = String::from("ascii_video.mp4"))]
-        output: String,
 
         /// ASCII character width per frame
         #[arg(short = 'w', long, default_value_t = 120)]
         char_width: u32,
 
-        /// Style of ASCII art
-        #[arg(short, long)]
-        style: Option<u8>,
-
         /// Font size
         #[arg(short = 'f', long, default_value_t = 9.0)]
         f_size: f32,
+
+        /// ASCII art style [default: 0]
+        #[arg(short, long)]
+        style: Option<u8>,
+
+        /// Output file path
+        #[arg(short, long, default_value_t = String::from("ascii_res.mp4"))]
+        output: String,
     },
 }
 
 fn main() {
+    print_logo();
     let cli = Cli::parse();
 
     // initialize logging
@@ -101,8 +105,9 @@ fn main() {
     }
     env_logger::init();
 
+
     match &cli.command {
-        Commands::Text { input, width, style} => {
+        Commands::Console { input, width, style} => {
             debug!("Input file: {}", input);
             debug!("Width: {}", width);
 
@@ -160,4 +165,11 @@ fn parse_resolution(res_str: &str) -> Option<(u32, u32)> {
             None
         }
     }
+}
+
+fn print_logo() {
+    let font = get_larry3d_font();
+    let figure = font.convert("RASCII").unwrap();
+
+    println!("{}", figure.to_string().truecolor(255, 165, 0).bold());
 }
