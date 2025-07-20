@@ -158,13 +158,15 @@ fn parse_resolution(res_str: &str) -> Option<(u32, u32)> {
             // Try parsing "WIDTHxHEIGHT"
             let parts: Vec<&str> = res_str.split('x').collect();
             if parts.len() == 2 {
-                if let (Ok(w), Ok(h)) = (parts[0].parse::<u32>(), parts[1].parse::<u32>()) {
-                    return Some((w, h));
+                let w = parts[0].parse::<u32>();
+                let h = parts[1].parse::<u32>();
+                if let (Ok(w), Ok(h)) = (w, h) {
+                    if w > 0 && h > 0 && w <= 4096 && h <= 16384 {
+                        return Some((w, h));
+                    }
                 }
             }
             None
-        }
-    }
 }
 
 fn print_logo() {
