@@ -1,5 +1,4 @@
 const ASCII_CHARS: &[u8] = b"@%#*+=-:. ";
-const ASCII_CHARS_EXTENDED: &[u8] = b"@%#*+=-:.      ";
 const ASCII_CHARS_INVERTED: &[u8] = b" .:-=+*#%@";
 const ASCII_CHARS_MODERATE_DETAIL: &[u8] = b"   .'`^\",:;Il!i><~+_-?][}{1)(|\\/tfjrxnuvczXYUJCLQ0OZmwqpdbkhao*#MW&8%B@$";
 const ASCII_CHARS_MODERATE_DETAIL_INVERTED: &[u8] = b"$@%B&8W#*oahkbdpqmwZO0QLCJUYXzcvunxrjft\\/|)(1}{][?-_+~><i!lI;:,\"^`\'. ";
@@ -12,7 +11,7 @@ pub fn image_to_ascii(img: image::GrayImage, style: Option<u8>) -> String {
     let mut ascii = String::new();
 
     let ascii_set: &[u8] = match style.unwrap_or(0) {
-        1 => ASCII_CHARS_EXTENDED,
+        1 => ASCII_CHARS,
         2 => ASCII_CHARS_INVERTED,
         3 => ASCII_CHARS_MODERATE_DETAIL,
         4 => ASCII_CHARS_MODERATE_DETAIL_INVERTED,

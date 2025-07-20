@@ -5,7 +5,7 @@ use log::{debug};
 use crate::utils::image_to_ascii::image_to_ascii;
 use crate::utils::image_ops::image_filters::resize_image_simple;
 use crate::utils::image_ops::image_rendering::render_ascii_to_image;
-use crate::utils::embedded_font::get_embedded_font;
+use crate::utils::font_utils::get_embedded_font;
 use crate::utils::timer::timer_debug;
 
 pub fn process_video_to_ascii(
