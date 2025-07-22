@@ -8,6 +8,7 @@ use rascii::utils::image_to_ascii::image_to_ascii;
 use rascii::utils::image_ops::image_rendering::render_ascii_to_image;
 use rascii::utils::font_utils::{get_embedded_font,get_larry3d_font};
 use rascii::utils::video_ops::video_rendering::process_video_to_ascii;
+use rascii::utils::video_ops::in_memory_video_rendering::process_video_to_ascii_opencv;
 use rascii::utils::timer::timer_debug;
 
 
@@ -144,6 +145,7 @@ fn main() {
             });
             println!("Converting video: {}", input);
             timer_debug("Video to ascii total", || { process_video_to_ascii(input, output, width_px, height_px, *char_width, *style, *f_size)});
+            timer_debug("Video to ascii total", || { process_video_to_ascii_opencv(input, output, width_px, height_px, *char_width, *style, *f_size)});
             println!("ASCII video saved to: {}", output);
         }
     }
@@ -167,6 +169,8 @@ fn parse_resolution(res_str: &str) -> Option<(u32, u32)> {
                 }
             }
             None
+        }
+    }
 }
 
 fn print_logo() {
