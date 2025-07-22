@@ -8,6 +8,7 @@ use crate::utils::image_ops::image_rendering::render_ascii_to_image;
 use crate::utils::font_utils::get_embedded_font;
 use crate::utils::timer::timer_debug;
 
+/// old
 pub fn process_video_to_ascii(
     input: &str,
     output: &str,
