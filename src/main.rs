@@ -7,7 +7,6 @@ use rascii::utils::image_ops::image_filters::resize_image_simple;
 use rascii::utils::image_to_ascii::image_to_ascii;
 use rascii::utils::image_ops::image_rendering::render_ascii_to_image;
 use rascii::utils::font_utils::{get_embedded_font,get_larry3d_font};
-use rascii::utils::video_ops::video_rendering::process_video_to_ascii;
 use rascii::utils::video_ops::in_memory_video_rendering::process_video_to_ascii_opencv;
 use rascii::utils::timer::timer_debug;
 

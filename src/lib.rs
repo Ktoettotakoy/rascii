@@ -7,7 +7,6 @@ pub mod utils{
         pub mod image_filters;
     }
     pub mod video_ops{
-        pub mod video_rendering;
         pub mod in_memory_video_rendering;
     }
 }
