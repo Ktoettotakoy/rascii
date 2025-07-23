@@ -5,6 +5,7 @@ use crate::utils::image_ops::image_filters::resize_image_dynamic;
 use crate::utils::image_ops::image_rendering::render_ascii_to_image;
 use crate::utils::font_utils::get_embedded_font;
 use image::{DynamicImage, ImageBuffer, Rgb};
+use log::{debug};
 
 pub fn process_video_to_ascii_opencv(
     input_path: &str,
@@ -13,21 +14,26 @@ pub fn process_video_to_ascii_opencv(
     height: u32,
     char_width: u32,
     style: Option<u8>,
+    fps: Option<f32>,
     font_size: f32,
 ) {
     let mut capture = videoio::VideoCapture::from_file(input_path, videoio::CAP_ANY).unwrap();
     assert!(capture.is_opened().unwrap(), "Failed to open video file");
 
-    let fps = capture.get(videoio::CAP_PROP_FPS).unwrap();
-    // let target_fps = 10.0;
-    // let frame_interval = (fps / target_fps).round() as usize;
+    let input_fps = capture.get(videoio::CAP_PROP_FPS).unwrap_or(30.0);
+    let target_fps = fps.unwrap_or(input_fps);
+    let frame_interval = (input_fps / target_fps).round() as usize;
+
+    debug!(
+        "Input FPS: {:.2}, Target FPS: {:.2}, Frame interval: {}",
+        input_fps, target_fps, frame_interval
+    );
 
     let fourcc = videoio::VideoWriter::fourcc('m', 'p', '4', 'v').unwrap();
-
     let mut writer = videoio::VideoWriter::new(
         &("opencv_".to_owned() + output_path),
         fourcc,
-        fps,
+        target_fps,
         Size::new(width as i32, height as i32),
         true,
     )
@@ -35,16 +41,13 @@ pub fn process_video_to_ascii_opencv(
 
     let font = get_embedded_font();
     let mut frame = Mat::default();
-    // let mut frame_index = 0;
-    while capture.read(&mut frame).unwrap() && !frame.empty() {
-        // if frame.empty() {
-        //     continue;
-        // }
+    let mut frame_index = 0;
 
-        // if !should_process_frame(frame_index, frame_interval) {
-        //     frame_index += 1;
-        //     continue;
-        // }
+    while capture.read(&mut frame).unwrap() && !frame.empty() {
+        if !should_process_frame(frame_index, frame_interval) {
+            frame_index += 1;
+            continue;
+        }
 
         let img = mat_to_rgb_image(&frame);
         let resized = resize_image_dynamic(&DynamicImage::ImageRgb8(img), char_width);
@@ -54,12 +57,13 @@ pub fn process_video_to_ascii_opencv(
         let mat_frame = rgb_image_to_mat(&ascii_img);
         writer.write(&mat_frame).unwrap();
 
-        // frame_index += 1;
+        frame_index += 1;
     }
 
     writer.release().unwrap();
     capture.release().unwrap();
 }
+
 
 fn mat_to_rgb_image(mat: &opencv::core::Mat) -> image::RgbImage {
     let size = mat.size().unwrap();
