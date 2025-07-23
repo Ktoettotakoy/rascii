@@ -144,7 +144,6 @@ fn main() {
                 std::process::exit(1);
             });
             println!("Converting video: {}", input);
-            timer_debug("Video to ascii total", || { process_video_to_ascii(input, output, width_px, height_px, *char_width, *style, *f_size)});
             timer_debug("Video to ascii total", || { process_video_to_ascii_opencv(input, output, width_px, height_px, *char_width, *style, *f_size)});
             println!("ASCII video saved to: {}", output);
         }
