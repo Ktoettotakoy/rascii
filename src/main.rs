@@ -89,6 +89,10 @@ enum Commands {
         #[arg(short, long)]
         style: Option<u8>,
 
+        /// Fps of the output video [default: input video fps]
+        #[arg(short, long)]
+        fps: Option<f32>,
+
         /// Output file path
         #[arg(short, long, default_value_t = String::from("ascii_res.mp4"))]
         output: String,
@@ -137,13 +141,13 @@ fn main() {
             img.save(output).expect("Failed to save image");
             println!("ASCII art saved to: {}", output);
         },
-        Commands::Video { input, res, output, char_width, style, f_size } => {
+        Commands::Video { input, res, output, char_width, style, f_size, fps } => {
             let (width_px, height_px) = parse_resolution(res).unwrap_or_else(|| {
                 eprintln!("Invalid resolution: '{}'", res);
                 std::process::exit(1);
             });
             println!("Converting video: {}", input);
-            timer_debug("Video to ascii total", || { process_video_to_ascii_opencv(input, output, width_px, height_px, *char_width, *style, *f_size)});
+            timer_debug("Video to ascii total", || { process_video_to_ascii_opencv(input, output, width_px, height_px, *char_width, *style, *fps, *f_size)});
             println!("ASCII video saved to: {}", output);
         }
     }
