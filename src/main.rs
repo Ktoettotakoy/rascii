@@ -91,7 +91,7 @@ enum Commands {
 
         /// Fps of the output video [default: input video fps]
         #[arg(short, long)]
-        fps: Option<f32>,
+        fps: Option<f64>,
 
         /// Output file path
         #[arg(short, long, default_value_t = String::from("ascii_res.mp4"))]

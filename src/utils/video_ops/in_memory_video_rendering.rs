@@ -14,7 +14,7 @@ pub fn process_video_to_ascii_opencv(
     height: u32,
     char_width: u32,
     style: Option<u8>,
-    fps: Option<f32>,
+    fps: Option<f64>,
     font_size: f32,
 ) {
     let mut capture = videoio::VideoCapture::from_file(input_path, videoio::CAP_ANY).unwrap();
