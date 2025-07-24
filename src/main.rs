@@ -89,7 +89,7 @@ enum Commands {
         #[arg(short, long)]
         style: Option<u8>,
 
-        /// Fps of the output video [default: input video fps]
+        /// Fps of the output video [default: matches source]
         #[arg(long)]
         fps: Option<f64>,
 
