@@ -148,7 +148,7 @@ fn write_processed_frames_to_video(
 ) {
     let fourcc = videoio::VideoWriter::fourcc('m', 'p', '4', 'v').unwrap();
     let mut writer = videoio::VideoWriter::new(
-        &("opencv_".to_owned() + output_path),
+        output_path,
         fourcc,
         fps,
         Size::new(width as i32, height as i32),
