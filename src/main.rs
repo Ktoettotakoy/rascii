@@ -129,8 +129,7 @@ fn main() {
                 std::process::exit(1);
             });
 
-            debug!("Rendering at resolution: {}x{} px", width_px, height_px);
-            debug!("Character width: {}", char_width);
+
 
             let ascii = image_to_ascii(resize_image_simple(input, *char_width), *style);
 
