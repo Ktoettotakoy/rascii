@@ -5,7 +5,22 @@ use crate::utils::image_ops::image_filters::resize_image_dynamic;
 use crate::utils::image_ops::image_rendering::render_ascii_to_image;
 use crate::utils::font_utils::get_embedded_font;
 use image::{DynamicImage, ImageBuffer, Rgb};
-use log::{debug};
+use log::{debug, info};
+use rayon::prelude::*;
+use std::sync::Arc;
+
+// Struct to hold frame data in order
+#[derive(Clone)]
+struct FrameData {
+    index: usize,
+    mat: Mat,
+}
+
+// Struct to hold processed frame in order
+struct ProcessedFrame {
+    index: usize,
+    mat: Mat,
+}
 
 pub fn process_video_to_ascii_opencv(
     input_path: &str,
@@ -29,39 +44,113 @@ pub fn process_video_to_ascii_opencv(
         input_fps, target_fps, frame_interval
     );
 
-    let fourcc = videoio::VideoWriter::fourcc('m', 'p', '4', 'v').unwrap();
-    let mut writer = videoio::VideoWriter::new(
-        &("opencv_".to_owned() + output_path),
-        fourcc,
-        target_fps,
-        Size::new(width as i32, height as i32),
-        true,
-    )
-    .unwrap();
+    // Read all frames that need processing
+    info!("Reading frames from video...");
+    let frames_to_process = read_frames_for_processing(&mut capture, frame_interval);
+    let total_frames = frames_to_process.len();
+    info!("Read {} frames for processing", total_frames);
 
-    let font = get_embedded_font();
+    // Process frames in parallel using Rayon
+    info!("Processing frames...");
+    let font = Arc::new(get_embedded_font());
+
+    let processed_frames: Vec<ProcessedFrame> = frames_to_process
+        .into_par_iter()
+        .map(|frame_data| {
+            let font_clone = Arc::clone(&font);
+            process_single_frame(frame_data, char_width, style, font_clone, width, height, font_size)
+        })
+        .collect();
+
+    // Sort processed frames by original index to maintain order
+    let mut sorted_frames = processed_frames;
+    sorted_frames.sort_by_key(|f| f.index);
+
+    // Write frames to output video
+    info!("Writing processed frames to video...");
+    write_processed_frames_to_video(sorted_frames, output_path, target_fps, width, height);
+
+    capture.release().unwrap();
+    info!("Video processing completed successfully");
+}
+
+fn read_frames_for_processing(
+    capture: &mut videoio::VideoCapture,
+    frame_interval: usize
+) -> Vec<FrameData> {
+    let mut frames = Vec::new();
     let mut frame = Mat::default();
     let mut frame_index = 0;
 
     while capture.read(&mut frame).unwrap() && !frame.empty() {
-        if !should_process_frame(frame_index, frame_interval) {
-            frame_index += 1;
-            continue;
+        if should_process_frame(frame_index, frame_interval) {
+            // Clone the frame data to store it
+            let frame_clone = frame.clone();
+            frames.push(FrameData {
+                index: frame_index,
+                mat: frame_clone,
+            });
         }
-
-        let img = mat_to_rgb_image(&frame);
-        let resized = resize_image_dynamic(&DynamicImage::ImageRgb8(img), char_width);
-        let gray = resized.to_luma8();
-        let ascii = image_to_ascii(gray, style);
-        let ascii_img = render_ascii_to_image(&ascii, &font, width, height, font_size);
-        let mat_frame = rgb_image_to_mat(&ascii_img);
-        writer.write(&mat_frame).unwrap();
-
         frame_index += 1;
     }
 
+    frames
+}
+
+fn process_single_frame(
+    frame_data: FrameData,
+    char_width: u32,
+    style: Option<u8>,
+    font: Arc<rusttype::Font<'static>>, // Adjust type based on your font type
+    width: u32,
+    height: u32,
+    font_size: f32,
+) -> ProcessedFrame {
+    // Convert OpenCV Mat to RGB image
+    let img = mat_to_rgb_image(&frame_data.mat);
+
+    // Resize image
+    let resized = resize_image_dynamic(&DynamicImage::ImageRgb8(img), char_width);
+
+    // Convert to grayscale
+    let gray = resized.to_luma8();
+
+    // Generate ASCII representation
+    let ascii = image_to_ascii(gray, style);
+
+    // Render ASCII back to image
+    let ascii_img = render_ascii_to_image(&ascii, &font, width, height, font_size);
+
+    // Convert back to OpenCV Mat
+    let mat_frame = rgb_image_to_mat(&ascii_img);
+
+    ProcessedFrame {
+        index: frame_data.index,
+        mat: mat_frame,
+    }
+}
+
+fn write_processed_frames_to_video(
+    frames: Vec<ProcessedFrame>,
+    output_path: &str,
+    fps: f64,
+    width: u32,
+    height: u32,
+) {
+    let fourcc = videoio::VideoWriter::fourcc('m', 'p', '4', 'v').unwrap();
+    let mut writer = videoio::VideoWriter::new(
+        &("opencv_".to_owned() + output_path),
+        fourcc,
+        fps,
+        Size::new(width as i32, height as i32),
+        true,
+    ).unwrap();
+
+    for processed_frame in frames {
+        writer.write(&processed_frame.mat).unwrap();
+    }
+
     writer.release().unwrap();
-    capture.release().unwrap();
 }
 
 
