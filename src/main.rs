@@ -1,5 +1,5 @@
 use clap::{Parser, Subcommand};
-use log::{debug};
+use log::{debug, info};
 use colored::*;
 
 
@@ -115,7 +115,7 @@ fn main() {
             debug!("Input file: {}", input);
             debug!("Width: {}", width);
 
-            println!("Printing ASCII to stdout");
+            info!("Printing ASCII to stdout");
 
             let ascii = timer_debug("image_to_ascii", || {
                 image_to_ascii(resize_image_simple(input, *width), *style)
@@ -139,16 +139,16 @@ fn main() {
             });
 
             img.save(output).expect("Failed to save image");
-            println!("ASCII art saved to: {}", output);
+            info!("ASCII art saved to: {}", output);
         },
         Commands::Video { input, res, output, char_width, style, f_size, fps } => {
             let (width_px, height_px) = parse_resolution(res).unwrap_or_else(|| {
                 eprintln!("Invalid resolution: '{}'", res);
                 std::process::exit(1);
             });
-            println!("Converting video: {}", input);
+            info!("Converting video: {}", input);
             timer_debug("Video to ascii total", || { process_video_to_ascii_opencv(input, output, width_px, height_px, *char_width, *style, *fps, *f_size)});
-            println!("ASCII video saved to: {}", output);
+            info!("ASCII video saved to: {}", output);
         }
     }
 }
