@@ -22,6 +22,7 @@ struct ProcessedFrame {
     mat: Mat,
 }
 
+/// Processes a video file to ASCII art using OpenCV
 pub fn process_video_to_ascii_opencv(
     input_path: &str,
     output_path: &str,
@@ -74,6 +75,7 @@ pub fn process_video_to_ascii_opencv(
     info!("Video processing completed successfully");
 }
 
+/// Reads frames from the video capture, skipping frames based on the frame interval
 fn read_frames_for_processing(
     capture: &mut videoio::VideoCapture,
     frame_interval: usize
@@ -97,11 +99,17 @@ fn read_frames_for_processing(
     frames
 }
 
+/// Determines if a frame should be processed based on the frame interval
+fn should_process_frame(frame_index: usize, frame_interval: usize) -> bool {
+    frame_index % frame_interval == 0
+}
+
+/// Processes a single frame of the video
 fn process_single_frame(
     frame_data: FrameData,
     char_width: u32,
     style: Option<u8>,
-    font: Arc<rusttype::Font<'static>>, // Adjust type based on your font type
+    font: Arc<rusttype::Font<'static>>,
     width: u32,
     height: u32,
     font_size: f32,
@@ -130,6 +138,7 @@ fn process_single_frame(
     }
 }
 
+/// Writes processed frames to the output video file
 fn write_processed_frames_to_video(
     frames: Vec<ProcessedFrame>,
     output_path: &str,
@@ -153,7 +162,7 @@ fn write_processed_frames_to_video(
     writer.release().unwrap();
 }
 
-
+/// Converts OpenCV Mat to RGB image
 fn mat_to_rgb_image(mat: &opencv::core::Mat) -> image::RgbImage {
     let size = mat.size().unwrap();
     let rows = size.height;
@@ -170,6 +179,7 @@ fn mat_to_rgb_image(mat: &opencv::core::Mat) -> image::RgbImage {
     img_buf
 }
 
+/// Converts RGB image to OpenCV Mat
 fn rgb_image_to_mat(img: &image::RgbImage) -> opencv::core::Mat {
     let (width, height) = img.dimensions();
     let mat_expr = Mat::zeros(height as i32, width as i32, CV_8UC3).unwrap();
@@ -183,8 +193,4 @@ fn rgb_image_to_mat(img: &image::RgbImage) -> opencv::core::Mat {
     }
 
     mat
-}
-
-fn should_process_frame(frame_index: usize, frame_interval: usize) -> bool {
-    frame_index % frame_interval == 0
 }
