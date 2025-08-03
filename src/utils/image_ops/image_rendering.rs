@@ -10,13 +10,13 @@ pub fn render_ascii_to_image(
     img_height: u32,
     font_size: f32
 ) -> RgbImage {
-    debug!("Rendering at resolution: {}x{} px", img_width, img_height);
-    debug!("Character width: {}", font_size);
+    // debug!("Rendering at resolution: {}x{} px", img_width, img_height);
+    // debug!("Character width: {}", font_size);
 
     let scale = Scale::uniform(font_size);
     let v_metrics = font.v_metrics(scale);
 
-        
+
     let lighter_black = Rgb([8, 8, 8]);
     let mut image = RgbImage::from_pixel(img_width, img_height, lighter_black);
 
