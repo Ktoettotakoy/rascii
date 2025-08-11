@@ -32,11 +32,11 @@ The binary will be located at: `target/release/rascii`. if you want the tool to 
 
 ---
 ## Help and Version
-rascii help
-rascii help console
-rascii help image
-rascii help video
-rascii --version
+`rascii help`
+`rascii help console`
+`rascii help image`
+`rascii help video`
+`rascii --version`
 
 
 ## Commands & Options
