@@ -3,6 +3,10 @@ name = "rascii"
 version = "1.0.1"
 edition = "2021"
 
+[[bin]]
+name = "rascii"
+path = "src/main.rs"
+
 [dependencies]
 clap = { version = "4.5.40", features = ["derive"] }
 image = "0.25"
