@@ -31,14 +31,6 @@ cargo build --release
 The binary will be located at: `target/release/rascii`. if you want the tool to be accessible from anywhere, add it to `/usr/local/bin/`
 
 ---
-## Help and Version
-`rascii help`
-`rascii help console`
-`rascii help image`
-`rascii help video`
-`rascii --version`
-
-
 ## Commands & Options
 
 Below are the main CLI options and example usages:
@@ -108,8 +100,22 @@ rascii video --input <input_video> [options]
 rascii video --input test/v_test.mp4 --res fhd --char-width 100 --f-size 8.5 --style 1 --fps 15 --output ascii_video.mp4
 
 ```
----
 
+#### Style section
+1. Minimal char set
+2. Inverted minimal char set
+3. Extended char set
+4. Inverted extended char set
+   
+---
+## Help and Version
+`rascii help`
+`rascii help console`
+`rascii help image`
+`rascii help video`
+`rascii --version`
+
+---
 ## Requirements
 - Rust (latest stable)
 
