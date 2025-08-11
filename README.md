@@ -30,6 +30,8 @@ cargo build --release
 ```
 The binary will be located at: `target/release/rascii`. if you want the tool to be accessible from anywhere, add it to `/usr/local/bin/`
 
+Alternatively run `cargo install --path .`
+
 ---
 ## Commands & Options
 
@@ -106,7 +108,7 @@ rascii video --input test/v_test.mp4 --res fhd --char-width 100 --f-size 8.5 --s
 2. Inverted minimal char set
 3. Extended char set
 4. Inverted extended char set
-   
+
 ---
 ## Help and Version
 `rascii help`
