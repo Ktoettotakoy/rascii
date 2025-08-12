@@ -1,7 +1,6 @@
 # 🎨 RASCII - ASCII Art Generator CLI
 
 ![Build](https://img.shields.io/badge/build-passing-brightgreen)
-![License](https://img.shields.io/badge/license-MIT-blue)
 ![Rust](https://img.shields.io/badge/Rust-2021-orange)
 ![Platform](https://img.shields.io/badge/platform-cross--platform-lightgrey)
 
@@ -120,6 +119,3 @@ rascii video --input test/v_test.mp4 --res fhd --char-width 100 --f-size 8.5 --s
 ---
 ## Requirements
 - Rust (latest stable)
-
-## License
-MIT
