@@ -13,7 +13,6 @@
 - 📷 Terminal-rendered ASCII from images
 - 🖼️ Save ASCII art as high-resolution PNGs
 - 🎞️ Convert video files into ASCII animations
-- 🎨 Multiple styles and font options
 - 🧠 Supports named or custom output resolutions
 
 
