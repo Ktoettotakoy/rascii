@@ -78,7 +78,7 @@ rascii image --input photo.jpg --res 2k --char-width 120 --f-size 10.0 --style 2
 
 ---
 
-### 2. video
+### 3. video
 Converts a video to ASCII and saves it as a video file.
 
 **Command:**
